@@ -86,7 +86,7 @@ def clinical_database(data, col='clinical', p_sav=None):
 if __name__ == "__main__":
     #args = init_args()
 
-    p = '/media/hvv/71672b1c-e082-495c-b560-a2dfc7d5de59/data/ISLES2024'
+    p = '/media/hvv/71672b1c-e082-495c-b560-a2dfc7d5de59/data/ISLES2024/ISLES24'
     isles_database_file_dict = default_database_file_dict()
     isles_img_file_dict = default_img_file_dict()
 
