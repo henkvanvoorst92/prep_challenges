@@ -33,7 +33,7 @@ if __name__ == "__main__":
                   'ncct_ratio':'_0002.nii.gz',
                   'ctp':'ctp',
                   'roimask':'roimask',
-                  'lesion':'lblTr',
+                  'lesion':'DWI_lblTr',
                   'hemisphere': '_hemispheremask.nii.gz'
                   }
     idct = get_image_dict(data, nnunet_dct)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         p_flipreg = os.path.join(imagesTr,copy.copy(filename_base).replace('.nii.gz',nnunet_dct['ncct_flip']))
         p_ratio = os.path.join(imagesTr,copy.copy(filename_base).replace('.nii.gz',nnunet_dct['ncct_ratio']))
         p_roimask = os.path.join(roimask_folder, f'{ID}_roimask.nii.gz')
-        p_hemispherereg = os.path.join(hemisphere_folder, copy.copy(filename_base)+nnunet_dct['hemisphere'])
+        p_hemispherereg = os.path.join(hemisphere_folder, copy.copy(filename_base).replace('.nii.gz',nnunet_dct['hemisphere']))
         ncct = None
 
         if not os.path.exists(p_roimask):
