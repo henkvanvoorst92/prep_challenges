@@ -12,7 +12,7 @@ def default_img_file_dict():
             'ctp': 'space-ncct_ctp.nii.gz',
             'ncct':'_ncct.nii.gz',
             # cropping not required for MRAs -->use n4bfc
-            'lesion': '_lesion-msk.nii.gz',
+            'dwi_seg': '_lesion-msk.nii.gz',
             'adc': '_adc.nii.gz',
             'dwi': '_dwi.nii.gz',
             }
@@ -86,7 +86,7 @@ def clinical_database(data, col='clinical', p_sav=None):
 if __name__ == "__main__":
     #args = init_args()
 
-    p = '/media/hvv/71672b1c-e082-495c-b560-a2dfc7d5de59/data/ISLES2024/ISLES24'
+    p = '/media/hvv/ec2480e5-6c18-468c-b971-5271432b386d/hvv/BL_NCCT/ISLES2024/ISLES24'
     isles_database_file_dict = default_database_file_dict()
     isles_img_file_dict = default_img_file_dict()
 

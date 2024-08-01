@@ -23,32 +23,35 @@ if __name__ == "__main__":
     atl = sitk.ReadImage(p_atlas_image)
     hemisphere_atl_mask = sitk.ReadImage(p_hemisphere)
 
-    p = '/media/hvv/71672b1c-e082-495c-b560-a2dfc7d5de59/data/ISLES2024'
+    p = '/media/hvv/ec2480e5-6c18-468c-b971-5271432b386d/hvv/BL_NCCT/ISLES2024'
     data = pd.read_excel(os.path.join(p,'ISLES24', 'image_data.xlsx'))
     data.index = data['ID']
     #NCCT FLIP and register
     #segment brain in NCCT
     nnunet_dct = {'ncct':'_0000.nii.gz',
-                  'ncct_flip':'_0001.nii.gz',
-                  'ncct_ratio':'_0002.nii.gz',
-                  'ctp':'ctp',
-                  'roimask':'roimask',
-                  'lesion':'DWI_lblTr',
-                  'hemisphere': '_hemispheremask.nii.gz'
+                    'ncct_flip':'_0001.nii.gz',
+                    'ncct_ratio':'_0002.nii.gz',
+                    'ctp':'_ctp.nii.gz',
+                    'dwi_seg':'_dwi_mask.nii.gz',
+                    'cbv': '_cbv.nii.gz',
+                    'cbf': '_cbf.nii.gz',
+                    'dwi': '_dwi.nii.gz',
+                    'roimask': '_roimask.nii.gz',
+                    'hemisphere': '_hemispheremask.nii.gz'
                   }
     idct = get_image_dict(data, nnunet_dct)
 
-    lesion_folder = os.path.join(p,'lblTr')
-    ctp_folder = os.path.join(p,'ctp')
-    imagesTr = os.path.join(p,'imagesTr')
-    roimask_folder = os.path.join(p,'roimask')
-    hemisphere_folder = os.path.join(p, 'hemisphere')
+    #lesion_folder = os.path.join(p,'lblTr')
+    imagesTr = os.path.join(p,'NCCT-3chan')
+    for k in nnunet_dct.keys():
+        if 'ncct' not in k:
+            os.makedirs(os.path.join(p,k), exist_ok=True)
 
-    os.makedirs(lesion_folder, exist_ok=True)
-    os.makedirs(ctp_folder,exist_ok=True)
+    # os.makedirs(lesion_folder, exist_ok=True)
+    # os.makedirs(ctp_folder,exist_ok=True)
     os.makedirs(imagesTr, exist_ok=True)
-    os.makedirs(roimask_folder, exist_ok=True)
-    os.makedirs(hemisphere_folder, exist_ok=True)
+    # os.makedirs(roimask_folder, exist_ok=True)
+    # os.makedirs(hemisphere_folder, exist_ok=True)
 
     rp = {'type_of_transform': 'TRSAA',
           'fix_bm': None,
@@ -63,8 +66,8 @@ if __name__ == "__main__":
         filename_base = copy.copy(os.path.basename(d['ncct']))
         p_flipreg = os.path.join(imagesTr,copy.copy(filename_base).replace('.nii.gz',nnunet_dct['ncct_flip']))
         p_ratio = os.path.join(imagesTr,copy.copy(filename_base).replace('.nii.gz',nnunet_dct['ncct_ratio']))
-        p_roimask = os.path.join(roimask_folder, f'{ID}_roimask.nii.gz')
-        p_hemispherereg = os.path.join(hemisphere_folder, copy.copy(filename_base).replace('.nii.gz',nnunet_dct['hemisphere']))
+        p_roimask = os.path.join(p, 'roimask', f'{ID}'+nnunet_dct['roimask']+'.nii.gz')
+        p_hemispherereg = os.path.join(p,'hemisphere', copy.copy(filename_base).replace('.nii.gz',nnunet_dct['hemisphere']))
         ncct = None
 
         if not os.path.exists(p_roimask):
@@ -95,6 +98,8 @@ if __name__ == "__main__":
             print('Saving')
             sitk.WriteImage(flipreg, p_flipreg)
             sitk.WriteImage(ratio, p_ratio)
+            sitk.WriteImage(ncct,
+                            os.path.join(imagesTr, copy.copy(filename_base).replace('.nii.gz', nnunet_dct['ncct'])))
 
         if (not os.path.exists(p_hemispherereg)) and (os.path.exists(p_hemisphere)):
                 #coregister halfbrain mask for laterality selection (using FU DWI or CTP core/penumbra)
@@ -110,9 +115,28 @@ if __name__ == "__main__":
                 #run whole script again after NCCT lesion segmentation is done
                 #identification_mask_preference = [d['dwi_pierre'], d['core_mask'], d['dl_ncct_mask']]
 
-        #data to new folder
-        shutil.copy2(d['lesion'], lesion_folder)
-        shutil.copy2(d['ctp'], ctp_folder)
-        shutil.copy2(d['ncct'], os.path.join(imagesTr,copy.copy(filename_base).replace('.nii.gz',nnunet_dct['ncct'])))
+        # data to new folder
+
+        print('Copying other files')
+        #ncct and roimask require further processing hence not use
+        for k in nnunet_dct.keys():
+            if not ('ncct' in k or 'roimask' in k or 'hemisphere' in k):
+                f_out = os.path.join(p, k, ID+nnunet_dct[k])
+
+                if k in ['cbv', 'cbf', 'tmax']:
+                    im = sitk.ReadImage(d[k])
+                    im = sitk.Cast(im, sitk.sitkFloat32)
+                    sitk.WriteImage(im, f_out)
+
+                if (not os.path.exists(f_out)) and os.path.exists(d[k]):
+                    im = sitk.ReadImage(d[k])
+                    try:
+                        im = sitk.Cast(im, sitk.sitkInt16)
+                    except:
+                        im = im
+                    sitk.WriteImage(im, f_out)
+
+        print('Finished')
+
 
 
