@@ -115,6 +115,10 @@ if __name__ == "__main__":
                 #run whole script again after NCCT lesion segmentation is done
                 #identification_mask_preference = [d['dwi_pierre'], d['core_mask'], d['dl_ncct_mask']]
 
+        try:
+            im = sitk.Cast(im, sitk.sitkInt16)
+        except:
+            im = im
         # data to new folder
 
         print('Copying other files')
@@ -130,10 +134,6 @@ if __name__ == "__main__":
 
                 if (not os.path.exists(f_out)) and os.path.exists(d[k]):
                     im = sitk.ReadImage(d[k])
-                    try:
-                        im = sitk.Cast(im, sitk.sitkInt16)
-                    except:
-                        im = im
                     sitk.WriteImage(im, f_out)
 
         print('Finished')

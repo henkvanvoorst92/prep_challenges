@@ -19,7 +19,6 @@ def load_scans_from_dict(dct, skip_keys=['p_scan']):
             dct_out[k] = sitk.ReadImage(v)
 
     return dct_out
-
 def get_image_dict(data, nnunet_dct):
     select_image_data = data[np.isin(data['images'],list(nnunet_dct.keys()))]
     image_dct = {k:{} for k in select_image_data.index.unique()}
